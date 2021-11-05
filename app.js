@@ -10,6 +10,25 @@ app.use(express.json());
 
 const JWT_KEY = 'THIS_IS_TOP_SECRET';
 
+const authenticateJWT = (req, res, next) =>{
+  const authHeader = req.headers.authorization;
+
+  if (authHeader) {
+    const token = authHeader.split(' ')[1];
+
+    jwt.verify(token, JWT_KEY, (err, user) => {
+      if (err) {
+        return res.sendStatus(403);
+      }
+
+      req.user = user;
+      next();
+    });
+  } else {
+    res.sendStatus(404);
+  }
+};
+
 app.use(async (req, res, next) => {
   global.db = await mysql.createConnection({ 
     host: process.env.host, 
@@ -44,7 +63,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.get('/', async(req, res) => {
+app.get('/', authenticateJWT, async(req, res) => {
   const [data] = await global.db.query(`SELECT * FROM car`);
 
   res.send({
