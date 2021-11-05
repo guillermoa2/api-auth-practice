@@ -1,5 +1,7 @@
 const express = require('express');
 const mysql = require('mysql2/promise');
+const dotenv = require('dotenv');
+dotenv.config({path: './.env'});
 const app = express();
 const port = 3000;
 
@@ -7,15 +9,24 @@ app.use(express.json());
 
 app.use(async (req, res, next) => {
   global.db = await mysql.createConnection({ 
-    host: 'xxxxxxx', 
-    user: 'root', 
-    password: 'xxxxxxxx', 
-    database: 'bvt_demo', 
+    host: process.env.host, 
+    user: process.env.user, 
+    password: process.env.password, 
+    database: process.env.database, 
+    port: process.env.port,
     multipleStatements: true 
   });
 
   global.db.query(`SET time_zone = '-8:00'`);
   await next();
+});
+
+app.get('/', async(req, res) => {
+  const [data] = await global.db.query(`SELECT * FROM car`);
+
+  res.send({
+    data
+  });
 });
 
 app.get('/:id', async (req, res) => {
