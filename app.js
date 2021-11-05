@@ -24,6 +24,25 @@ app.use(async (req, res, next) => {
   await next();
 });
 
+app.post('/login', async (req, res) => {
+  console.log('login.req.body', req.body);
+
+  const {email, password} = req.body;
+
+  // Filter user from the users array by username and password
+  const [[user]] = await global.db.query('SELECT * FROM user WHERE email = ? AND password = ?', [email, password]);
+
+  if (user) {
+    // Generate an access token
+    const token = jwt.sign({ id:user.id, email: user.email }, JWT_KEY);
+
+    res.json({
+      jwt: token
+    });
+  } else {
+    res.send('Username or password incorrect');
+  }
+});
 
 app.get('/', async(req, res) => {
   const [data] = await global.db.query(`SELECT * FROM car`);
