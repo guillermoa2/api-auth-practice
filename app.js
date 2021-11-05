@@ -59,11 +59,13 @@ app.post('/login', async (req, res) => {
       jwt: token
     });
   } else {
-    res.send('Username or password incorrect');
+    res.send('Email or password incorrect');
   }
 });
 
 app.get('/', authenticateJWT, async(req, res) => {
+  console.log('req.user', req.user);
+
   const [data] = await global.db.query(`SELECT * FROM car`);
 
   res.send({
