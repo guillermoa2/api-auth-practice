@@ -1,4 +1,5 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const mysql = require('mysql2/promise');
 const dotenv = require('dotenv');
 dotenv.config({path: './.env'});
@@ -6,6 +7,8 @@ const app = express();
 const port = 3000;
 
 app.use(express.json());
+
+const JWT_KEY = 'THIS_IS_TOP_SECRET';
 
 app.use(async (req, res, next) => {
   global.db = await mysql.createConnection({ 
@@ -20,6 +23,7 @@ app.use(async (req, res, next) => {
   global.db.query(`SET time_zone = '-8:00'`);
   await next();
 });
+
 
 app.get('/', async(req, res) => {
   const [data] = await global.db.query(`SELECT * FROM car`);
