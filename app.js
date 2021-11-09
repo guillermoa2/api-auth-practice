@@ -52,9 +52,11 @@ app.post('/login', async (req, res) => {
   const {email, password} = req.body;
 
   // Filter user from the users array by username and password
-  const [[user]] = await global.db.query('SELECT * FROM user WHERE email = ? AND password = ?', [email, password]);
+  const [[user]] = await global.db.query('SELECT * FROM user WHERE email = ?', [email]);
 
-  if (user) {
+  const match = await bcrypt.compare(password, user.password);
+
+  if (user && match) {
     // Generate an access token
     const token = jwt.sign({ id:user.id, email: user.email }, JWT_KEY);
 
