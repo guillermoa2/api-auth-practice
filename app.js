@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const mysql = require('mysql2/promise');
+const bcrypt = require('bcrypt');
 const dotenv = require('dotenv');
 dotenv.config({path: './.env'});
 const app = express();
@@ -39,6 +40,8 @@ app.use(async (req, res, next) => {
     multipleStatements: true 
   });
 
+  global.db.config.namedPlaceholders = true;
+
   global.db.query(`SET time_zone = '-8:00'`);
   await next();
 });
@@ -63,6 +66,31 @@ app.post('/login', async (req, res) => {
   }
 });
 
+app.post('/user/create', async (req, res) => {
+  console.log("req.body", req.body);
+
+  try {
+    const hash = await bcrypt.hash(req.body.password, 10);
+
+    const [user] = await global.db.query(`
+      INSERT INTO user (email, password) VALUES (:email, :password);
+      `, {
+      email: req.body.email,
+      password: hash
+    })
+
+    console.log(user)
+
+    res.send({message: "New user created!", user})
+  }
+  catch( err ) {
+    console.log(err);
+    res.status(500).json({
+      message: err.message
+    })
+  };
+});
+
 app.get('/', authenticateJWT, async(req, res) => {
   console.log('req.user', req.user);
 
@@ -74,7 +102,7 @@ app.get('/', authenticateJWT, async(req, res) => {
 });
 
 app.get('/:id', async (req, res) => {
-  const [data] = await global.db.query(`SELEcT * FROM car WHERE id = ?`, [req.params.id]);
+  const [data] = await global.db.query(`SELECT * FROM car WHERE id = ?`, [req.params.id]);
 
   res.send({
     data
