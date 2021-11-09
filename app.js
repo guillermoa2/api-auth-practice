@@ -112,23 +112,27 @@ app.get('/car/:id',authenticateJWT, async (req, res) => {
 });
 
 app.post('/car',authenticateJWT, async (req, res) => {
-
-  const [[makeId]] = await global.db.query(`
-  SELECT id FROM car_make WHERE name = ?
-  `, [
-    req.body.make
-  ]);
-
-  const [car] = await global.db.query(`
-  INSERT INTO car (make_id, color, date_entered, user_id) 
-  VALUES (:makeId, :color, SUBTIME(now(), "8:00:00"), :userId)
-  `, {
-    makeId: makeId.id, 
-    color: req.body.color,
-    userId: req.user.id
-  });
-
-  res.send({message: 'I am posting data!', car})
+  try {
+    const [[makeId]] = await global.db.query(`
+    SELECT id FROM car_make WHERE name = ?
+    `, [
+      req.body.make
+    ]);
+  
+    const [car] = await global.db.query(`
+    INSERT INTO car (make_id, color, date_entered, user_id) 
+    VALUES (:makeId, :color, SUBTIME(now(), "8:00:00"), :userId)
+    `, {
+      makeId: makeId.id, 
+      color: req.body.color,
+      userId: req.user.id
+    });
+  
+    res.send({message: 'I am posting data!', car})
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({message: err.message})
+  };
 });
 
 app.put('/', (req, res) => {
