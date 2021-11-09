@@ -103,7 +103,7 @@ app.get('/', authenticateJWT, async(req, res) => {
   });
 });
 
-app.get('/:id',authenticateJWT, async (req, res) => {
+app.get('/car/:id',authenticateJWT, async (req, res) => {
   const [data] = await global.db.query(`SELECT * FROM car WHERE id = ?`, [req.params.id]);
 
   res.send({
@@ -111,13 +111,24 @@ app.get('/:id',authenticateJWT, async (req, res) => {
   });
 });
 
-app.post('/', async (req, res) => {
-  await global.db.query(`INSERT INTO car (make_id, color) VALUES (?, ?)`, [
-    req.body.makeId, 
-    req.body.color
+app.post('/car',authenticateJWT, async (req, res) => {
+
+  const [[makeId]] = await global.db.query(`
+  SELECT id FROM car_make WHERE name = ?
+  `, [
+    req.body.make
   ]);
 
-  res.send('I am posting data!')
+  const [car] = await global.db.query(`
+  INSERT INTO car (make_id, color, date_entered, user_id) 
+  VALUES (:makeId, :color, SUBTIME(now(), "8:00:00"), :userId)
+  `, {
+    makeId: makeId.id, 
+    color: req.body.color,
+    userId: req.user.id
+  });
+
+  res.send({message: 'I am posting data!', car})
 });
 
 app.put('/', (req, res) => {
