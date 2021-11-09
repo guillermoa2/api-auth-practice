@@ -103,7 +103,7 @@ app.get('/', authenticateJWT, async(req, res) => {
   });
 });
 
-app.get('/:id', async (req, res) => {
+app.get('/:id',authenticateJWT, async (req, res) => {
   const [data] = await global.db.query(`SELECT * FROM car WHERE id = ?`, [req.params.id]);
 
   res.send({
