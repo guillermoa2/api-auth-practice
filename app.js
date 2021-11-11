@@ -128,15 +128,43 @@ app.post('/car',authenticateJWT, async (req, res) => {
       userId: req.user.id
     });
   
-    res.send({message: 'I am posting data!', car})
+    res.send({message: 'I am posting data!', car});
   } catch (err) {
     console.log(err);
     res.status(500).json({message: err.message})
   };
 });
 
-app.put('/', (req, res) => {
+app.put('/car/:id',authenticateJWT, async (req, res) => {
   // You can pretty much do the same thing with POSTs
+
+  try {
+    
+    const [[make]] = await global.db.query(`
+      SELECT id
+      FROM car_make
+      WHERE name = ?
+      `,[
+        req.body.make
+      ]);
+
+    const car = await global.db.query(`
+      UPDATE car 
+      SET make_id = ?, color = ?, date_entered = SUBTIME(now(), "8:00:00")
+      WHERE id = ? AND user_id = ?
+      `,[
+        make.id,
+        req.body.color,
+        req.params.id,
+        req.user.id
+    ])
+
+    res.send({message: "Updated car"});
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({message: err.message})
+  }
+
 });
 
 app.delete('/:id', async (req, res) => {
