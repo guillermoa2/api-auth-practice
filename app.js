@@ -167,7 +167,7 @@ app.put('/car/:id',authenticateJWT, async (req, res) => {
 
 });
 
-app.delete('/:id', async (req, res) => {
+app.delete('/:id', authenticateJWT, async (req, res) => {
   await global.db.query(`DELETE FROM car WHERE id = ?`, [req.params.id]);
   res.send('I am deleting data!')
 });
