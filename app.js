@@ -96,7 +96,7 @@ app.post('/user/create', async (req, res) => {
 app.get('/', authenticateJWT, async(req, res) => {
   console.log('req.user', req.user);
 
-  const [data] = await global.db.query(`SELECT * FROM car`);
+  const [data] = await global.db.query(`SELECT * FROM car WHERE user_id = ?`, [req.user.id]);
 
   res.send({
     data
