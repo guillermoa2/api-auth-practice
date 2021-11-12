@@ -175,3 +175,12 @@ app.delete('/:id', authenticateJWT, async (req, res) => {
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
 });
+
+/*
+TO DO:
+-Refactor code:
+-Seperate routes (user, car)
+-Seperate middleware
+-Authorization: User can only edit their own inputted data
+-Error handling: different situations
+*/
